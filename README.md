@@ -11,10 +11,10 @@
 
 Sbt has default project layouts, built in tasks (compile, test, publish). Sbt provides flexibility and the ability to insert custom tasks easily, and each task has an output (value or file) and explicit dependencies which allows sbt to execute task in parallel. Sbt is composed of:
 
-* Tasks: Run in parallel, there are defaults like test, compile, etc... and are writen in scala.
+* Tasks: Run in parallel, there are defaults like test, compile, etc... and are written in scala.
 * Settings: It simply is a value.
 
-Sbt allows for cross compililation using different versions of scala:
+Sbt allows for cross compilation using different versions of scala:
 
 ```scala
 scalaVersion := "2.10.1"
@@ -35,9 +35,9 @@ Sbt includes defaults to create projects (the default project layout is borrowed
 
 * `tasks`: List the task to run in the build
 * `settings`: List the settings you can modify for the project
-* `inspect`: Displays informatino about a given task or setting.
+* `inspect`: Displays information about a given task or setting.
 
-Classes can be compiled using the `compile` command, and run using the `run` command (main classes). To open an interactive scala shell to test your classes execute `console`, if you make any changes on the project, you can reload the sbt console using the `reload` command. As stated in chapter 1, you can run the test continuously every time the source code changes if you prepend the command with the `~` character. With `testOnly`, you can specify which test to run (use tab autocompletion to see the available tests).
+Classes can be compiled using the `compile` command, and run using the `run` command (main classes). To open an interactive scala shell to test your classes execute `console`, if you make any changes on the project, you can reload the sbt console using the `reload` command. You can run the test continuously every time the source code changes if you prepend the command with the `~` character. With `testOnly`, you can specify which test to run (use tab autocompletion to see the available tests).
 
 # Chapter 3: Core Concepts<a name="Chapter3"></a>
 
@@ -51,9 +51,9 @@ val gitCommit = keyTask[String]("Determines the git commit")
 gitCommit := Process("git rev-parse HEAD").lines.head
 ```
 
-Sbt separates the computation of a value from the slot that stores the value. To display the result of a task use the `show` command, for example in the previous definition `show gitCommit`. If a task fails, it will stop the task with an error, but other tasks will continue to execute. When the user request a task to be executed, dependent tasks are also executed and pass the result to the executed task.The resourceGenerators setting is defined as a setting that stores all the tasks used to generate resources.
+Sbt separates the computation of a value from the slot that stores the value. To display the result of a task use the `show` command, for example in the previous definition `show gitCommit`. If a task fails, it will stop the task with an error, but other tasks will continue to execute. When the user request a task to be executed, dependent tasks are also executed and pass the result to the executed task.The `resourceGenerators` setting is defined as a setting that stores all the tasks used to generate resources.
 Configurations are namespaces for keys, sbt has several default configurations (Compile, Test, Runtime, Default, Pom, Optional, System, Provided, Docs and Sources). 
-You can also define different namespaces by using subprojects, to define a subproject, add the following lines:
+You can also define different namespaces by using sub-projects, to define a sub-project, add the following lines:
 
 ```scala
 lazy val projectName = Project("projectName", file("locationRelativeToTheBaseDir")).settings()
@@ -66,6 +66,6 @@ To check the projects contained in a build, run the command `projects`. Sbt crea
 lazy val projectName = Project("projectName", file("locationRelativeToTheBaseDir")).settings(libraryDependencies ++= ...)
 ```
 
-Project dependencies are defined using the `dependsOn` method on `Project`. Use the `lazy val` initialization on the sbt file to avoid problems with circular references. To share a task across different projects, you can define it using `in ThisBuild` qualifier to the task key when you define the setting. By default, sbt will run all unprefixed tasks/settings against all the projects defined in the build.
+Project dependencies are defined using the `dependsOn` method on `Project`. Use the `lazy val` initialization on the sbt file to avoid problems with circular references. To share a task across different projects, you can define it using `in ThisBuild` qualifier to the task key when you define the setting. By default, sbt will run all un-prefixed tasks/settings against all the projects defined in the build.
 
 # Chapter 4: The Default Build<a name="Chapter4></a>
