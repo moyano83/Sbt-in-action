@@ -41,7 +41,7 @@ Classes can be compiled using the `compile` command, and run using the `run` com
 
 # Chapter 3: Core Concepts<a name="Chapter3"></a>
 
-The build.sbt file defines settings for the project, being a setting a key, an initialization, and an operator (`:=`) that associates the key with the initialization. A setting is used to change an aspect of the build or add functionality. A setting has a type and an initialization of a setting can only return the same type than the setting. 
+The build.sbt file defines settings for the project, being a setting a key, an initialization, and an operator (`:=`) that associates the key with the initialization. Sbt reads all the settings defined in your build at load time and runs their initializations, which produce the final setting values used for your build. A setting is used to change an aspect of the build or add functionality. A setting has a type and an initialization of a setting can only return the same type than the setting. 
 To define a dependency, use the `librarydependencies += "groupId" % "artifactId" % "version"` notation. The `libraryDependencies` key is of type `Seq[ModuleID]` and the `+=` operator takes the previous value of the setting and assign a new value to it (or use the `++=` operator to add more than one comma separated value). You can use previously defined settings to specify another setting like `"groupId" % "artifactId" % version.value`, where the `value` method of a setting returns the actual value of the setting.
 A task in sbt is like a setting that runs every time you request its value. You can create new tasks by defining a variable or method: this is called a definition. A definition is executed before the settings, therefore settings can refer to a definition. You can use a setting after to give value to a definition:
 
@@ -69,3 +69,5 @@ lazy val projectName = Project("projectName", file("locationRelativeToTheBaseDir
 Project dependencies are defined using the `dependsOn` method on `Project`. Use the `lazy val` initialization on the sbt file to avoid problems with circular references. To share a task across different projects, you can define it using `in ThisBuild` qualifier to the task key when you define the setting. By default, sbt will run all un-prefixed tasks/settings against all the projects defined in the build.
 
 # Chapter 4: The Default Build<a name="Chapter4></a>
+
+In sbt, you can inspect the dependencies a task has by using the `inspect tree <task/setting>`, this command displays an ascii tree with detailing which settings/tasks the task is dependent on and what values those setting/tasks returns.
