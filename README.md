@@ -6,6 +6,7 @@
 2. [Chapter 2: Getting Started](#Chapter2)
 3. [Chapter 3: Core Concepts](#Chapter3)
 4. [Chapter 4: The Default Build](#Chapter4)
+5. [Chapter 5: Testing](#Chapter5)
 
 # Chapter 1: Why SBT? <a name="Chapter1"></a>
 
@@ -71,3 +72,50 @@ Project dependencies are defined using the `dependsOn` method on `Project`. Use 
 # Chapter 4: The Default Build<a name="Chapter4></a>
 
 In sbt, you can inspect the dependencies a task has by using the `inspect tree <task/setting>`, this command displays an ascii tree with detailing which settings/tasks the task is dependent on and what values those setting/tasks returns.
+In Sbt there is two types of sources/resources for projects:
+
+* _unmanaged sources/resources_: Sources discovered by convention, the user has to do the work for adding, modifying and tracking the source files. Makes use of file filters (only for sources) and default set of configurations to produce the sequence of source files for the project. 
+* _managed sources/resources_: Sbt will create the track for you. 
+
+An example of unmanaged sources can be seen by executing `show javaSource` which displays the source folder for java classes and it is borrowed from maven. Sbt mirrors different keys in different namespaces, an example are sources, and test sources files: Sbt places the _source file_ setting in the _Compile_ namespace and the _test source file_ setting in the _Test_ namespace. To change a default setting like `sourceDirectory` (which is dependant of the `baseDirectory` setting), we can do the following:
+
+```scala
+sourceDirectory := new File(baseDirectory.value, "customDirectory") //this will place sources in <project>/customDirectory
+```
+
+The _main_ and _test_ settings are dependent of _sourceDirectory_ of the _Global_ configuration, but both are defined in different scopes (_main_ in _Compile_, and _test_ in _Test_):
+
+```scala
+sourceDirectory in Compile := new File(sourceDirectory.value, "main") //same for tes in the Test configuration
+```
+
+This chain of settings is also used for the java, scala, resources folders (also in different configuration namespaces). Sbt applies filters to include/exclude source files in the unmanaged sources setting. The `include-filter` setting includes all *.java and *.scala files, and the `exclude-filter` excludes any hidden files (starting with _._), exclude filters take precedence over include filters. You can also change this behaviour:
+
+```scala
+exclude-filter in (Compile, unmanagedSources) := NothingFilter //Scoped to the unmanagedSources task in Compile
+```
+
+Dependencies on 3rd party libraries are also split in two parts:
+
+* _internal dependencies_: Between projects defined in the same build
+* _external dependencies_: Must be pulled from somewhere else like maven, ivy or the filesystem.
+    - _unmanaged dependencies_: Sbt discovers this dependencies from default locations (i.e. the lib folder). Sbt will put all  dependencies found in the _unmanagedClasspath_ setting. The default path can also be changed by altering the _unmanaged-base_ setting.
+    - _managed dependencies_: external dependencies declared in the build.sbt and resolved by the `update` task. `update` calls the `ivySbt` task which can be configured through the `resolvers` setting to specify how and where to find the dependencies.
+
+With Sbt and as stated before, an managed classpath dependency is declared as a moduleID (which the method `%` provides a shortcut to create one), and can be declared in different scopes. The syntax is:
+
+```scala
+libraryDependencies := Seq("<organization>" % "<name>" % "<revision>" % "<configuration>")
+```
+
+We can use the method `%%` between the organization and name, so sbt will choose the right version of the scala binary version (i.e. scala 2.10 instead of 2.11). If no configuration is specified, the default one is used.
+Sbt uses a task called `package` to wrap your production, `package` depends on `packageBin` which uses the `mappings` task to determine what should go in the production. `mappings` is of type `Seq[(File, String)]`, the files are the list of files to be included, and the and the Strings are the locations within the jar to include the files. For example, to include a license file in the jar base path:
+
+```scala
+// The LICENSE file in the base directory ends up in the base directory of the jar renamed to LICENSE.MIT
+mappings in packageBin in Compile += (baseDirectory.value, "LICENSE") -> "LICENSE.MIT"  
+```
+
+It is possible to define the name of a project using the `name` setting which is of type `Setting[String]`, same for the `organization` and `version` settings. the `organization` and `version` settings are usually defined at build level
+
+# Chapter 5: Testing <a name="Chapter5">
