@@ -1,18 +1,53 @@
 name := "preowned-kittens"
 
-organization := "com.preowned.kittens"
+version in ThisBuild := "1.0"
 
-version := "1.0"
+organization in ThisBuild := "com.preownedkittens"
 
-libraryDependencies ++= c(
-  "org.specs2" % "specs2_2.10" % "1.14" % "test",
-  "junit" % "junit" % "4.12" % "test"
+// Custom keys for this build.
+
+val gitHeadCommitSha = taskKey[String]("Determines the current git commit SHA")
+
+val makeVersionProperties = taskKey[Seq[File]]("Creates a version.properties file we can find at runtime.")
+
+
+// Common settings/definitions for the build
+
+def PreownedKittenProject(name: String): Project = (
+  Project(name, file(name))
+  settings(
+    libraryDependencies += "org.specs2" % "specs2_2.10" % "1.14" % "test"
+  )
 )
 
-val gitCommit = taskKey[String]("Definition to store a hashed string")
-gitCommit := Process("cd .. && git rev-parse HEAD").lines.head
+gitHeadCommitSha in ThisBuild := Process("git rev-parse HEAD").lines.head
 
-lazy val common = Project("common", file("common")).settings(libraryDependencies++=(
-  "org.specs2" % "specs2_2.10" % "1.14" % "test",
-  "junit" % "junit" % "4.12" % "test"
-))
+
+// Projects in this build
+
+lazy val common = (
+  PreownedKittenProject("common")
+  settings(
+    makeVersionProperties := {
+      val propFile = (resourceManaged in Compile).value / "version.properties"
+      val content = "version=%s" format (gitHeadCommitSha.value)
+      IO.write(propFile, content)
+      Seq(propFile)
+    },
+    resourceGenerators in Compile <+= makeVersionProperties
+  )
+)
+
+lazy val analytics = (
+  PreownedKittenProject("analytics")
+  dependsOn(common)
+  settings()
+)
+
+lazy val website = (
+  PreownedKittenProject("website")
+  dependsOn(common)
+  settings()
+)
+
+
