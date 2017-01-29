@@ -22,7 +22,7 @@ scalaVersion := "2.10.1"
 crossScalaVersions := Seq("2.8.2", "2.9.2")
 ``` 
 
-Sbt uses Ivy for its internal dependency resolution. It has a command line tool (it opens when we type `sbt` without parameters), and we can pass commands such as `compile` or `test` to it. If we want to run a task continually we use `~` like in `~test` (the whole cyle of test is executed when the source code changes).
+Sbt uses Ivy for its internal dependency resolution. It has a command line tool (it opens when we type `sbt` without parameters), and we can pass commands such as `compile` or `test` to it. If we want to run a task continually we use `~` like in `~test` (the whole cycle of test is executed when the source code changes).
 
 # Chapter 2: Getting Started<a name="Chapter2"></a>
 
@@ -35,7 +35,7 @@ Sbt includes defaults to create projects (the default project layout is borrowed
 
 * `tasks`: List the task to run in the build
 * `settings`: List the settings you can modify for the project
-* `inspect`: Displays informatino about a given task or setting.
+* `inspect`: Displays information about a given task or setting.
 
 Classes can be compiled using the `compile` command, and run using the `run` command (main classes). To open an interactive scala shell to test your classes execute `console`, if you make any changes on the project, you can reload the sbt console using the `reload` command. As stated in chapter 1, you can run the test continuously every time the source code changes if you prepend the command with the `~` character. With `testOnly`, you can specify which test to run (use tab autocompletion to see the available tests).
 
@@ -69,3 +69,4 @@ lazy val projectName = Project("projectName", file("locationRelativeToTheBaseDir
 Project dependencies are defined using the `dependsOn` method on `Project`. Use the `lazy val` initialization on the sbt file to avoid problems with circular references. To share a task across different projects, you can define it using `in ThisBuild` qualifier to the task key when you define the setting. By default, sbt will run all unprefixed tasks/settings against all the projects defined in the build.
 
 # Chapter 4: The Default Build<a name="Chapter4></a>
+
