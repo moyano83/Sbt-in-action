@@ -16,7 +16,9 @@ val makeVersionProperties = taskKey[Seq[File]]("Creates a version.properties fil
 def PreownedKittenProject(name: String): Project = (
   Project(name, file(name))
   settings(
-    libraryDependencies += "org.specs2" % "specs2_2.10" % "1.14" % "test"
+    libraryDependencies ++= Seq("org.specs2" % "specs2_2.10" % "1.14" % "test",
+      "org.pegdown" % "pegdown" % "1.0.2" % "test"
+    )
   )
 )
 

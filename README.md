@@ -7,6 +7,7 @@
 3. [Chapter 3: Core Concepts](#Chapter3)
 4. [Chapter 4: The Default Build](#Chapter4)
 5. [Chapter 5: Testing](#Chapter5)
+6. [Chapter 6: The IO and Process libraries](#Chapter6)
 
 # Chapter 1: Why SBT? <a name="Chapter1"></a>
 
@@ -119,3 +120,54 @@ mappings in packageBin in Compile += (baseDirectory.value, "LICENSE") -> "LICENS
 It is possible to define the name of a project using the `name` setting which is of type `Setting[String]`, same for the `organization` and `version` settings. the `organization` and `version` settings are usually defined at build level
 
 # Chapter 5: Testing <a name="Chapter5">
+
+Sbt provides different task for testing:
+
+* `test`: Runs all the test that sbt can find
+* `testOnly`: Runs only those tests specified by name, you can use also wildcards such as `sbt testOnly *Service*`
+* `testQuick`: Runs tests that has failed on the previous run, or hasn't been run yet, or depends on code that has changed.
+
+Sbt allows you to fork a JVM to execute test, and pass arguments to that fork. This is done using the `javaOptions` setting, which can be applied in the `test` and `run` tasks:
+
+```scala
+javaOptions in test += "-Dspecs2.outputDir=target/generatedReports"
+```
+
+`javaOptions` won't work without forking, which is specified with `fork in Test := True`. Forking is usually required when:
+
+* You need to pass different parameters to a the JVM.
+* Your code calls `System.exit()`, which shuts down the JVM.
+* You launch a lot of threads that are not tidied before the main method returns.
+* If you are using class loaders
+
+You can change the JVM to use with `javaHome` which is a setting that allows you to specify the JAVA_HOME location, or change the base location for that JVM or even change the input and output with `outputStrategy := Some(StdoutOutput)`, or even connect the input to retrieve user interaction like `connectInput in run := true`.
+
+Sbt defines a `test-interface` which allows to find the test and run them, sbt supports ScalaTest, ScalaCheck and specs2 because these frameworks includes a class that implements the `test-interface` mentioned. Junit does not support this interface, so you have to include a jar that does contain this interface for Junit.
+Sbt settings are immutable and the most recently defined one wins, so if you need to define an option common for two different testing libraries you can do it using the `TestFrameworks` class like this: 
+
+```scala
+testOptions += Test.argument(TestFrameworks.Spec2, "html")
+testOptions += Test.argument(TestFrameworks.Junit, "--run-listener=<.....>")
+```
+
+Sbt has a built in configuration for integration tests:
+
+```scala
+Project("name")
+  .settings(Defaults.itSettings: _*) // This adds compilation, testing and packaging tasks to the IntegrationTests configuration
+  .settings(
+  <more settings>
+  )
+  .configs(IntegrationTest) // This adds the predefined IntegrationTests configuration to the project 
+```
+
+The configuration previously defined uses the `src/it` directory (`src/it/scala`, `src/it/resources`, ...), and 
+dependencies are added to a different configuration also:
+
+```scala
+libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.31.0" % "it"
+```
+
+To run the integration tests with the command line, the prefix also changed from `test` to `it`: `it:test`
+
+# Chapter 6: The IO and Process libraries <a name="Chapter6">
