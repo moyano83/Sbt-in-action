@@ -10,17 +10,28 @@ val gitHeadCommitSha = taskKey[String]("Determines the current git commit SHA")
 
 val makeVersionProperties = taskKey[Seq[File]]("Creates a version.properties file we can find at runtime.")
 
-
 // Common settings/definitions for the build
 
 def PreownedKittenProject(name: String): Project = (
   Project(name, file(name))
-  settings(
-    libraryDependencies ++= Seq("org.specs2" % "specs2_2.10" % "1.14" % "test",
-      "org.pegdown" % "pegdown" % "1.0.2" % "test"
+    .settings( Defaults.itSettings : _*)
+    .settings(
+      libraryDependencies += "org.specs2" %% "specs2" % "1.14" % "test",
+      javacOptions in Compile ++= Seq("-target", "1.6", "-source", "1.6"),
+      resolvers ++= Seq(
+        "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+        "teamon.eu Repo" at "http://repo.teamon.eu/"
+      ),
+      exportJars := true
+    )
+    .configs(IntegrationTest)
+    .settings(
+      (test in IntegrationTest) := {
+        val x = (test in Test).value
+        (test in IntegrationTest).value
+      }
     )
   )
-)
 
 gitHeadCommitSha in ThisBuild := Process("git rev-parse HEAD").lines.head
 
@@ -29,7 +40,7 @@ gitHeadCommitSha in ThisBuild := Process("git rev-parse HEAD").lines.head
 
 lazy val common = (
   PreownedKittenProject("common")
-  settings(
+    settings(
     makeVersionProperties := {
       val propFile = (resourceManaged in Compile).value / "version.properties"
       val content = "version=%s" format (gitHeadCommitSha.value)
@@ -38,18 +49,16 @@ lazy val common = (
     },
     resourceGenerators in Compile <+= makeVersionProperties
   )
-)
+  )
 
-lazy val analytics = (
+val analytics = (
   PreownedKittenProject("analytics")
-  dependsOn(common)
-  settings()
-)
+    dependsOn(common)
+    settings()
+  )
 
-lazy val website = (
+val website = (
   PreownedKittenProject("website")
-  dependsOn(common)
-  settings()
-)
-
-
+    dependsOn(common, analytics)
+    settings()
+  )

@@ -8,6 +8,7 @@
 4. [Chapter 4: The Default Build](#Chapter4)
 5. [Chapter 5: Testing](#Chapter5)
 6. [Chapter 6: The IO and Process libraries](#Chapter6)
+7. [Chapter 7: Accepting user input](#Chapter7)
 
 # Chapter 1: Why SBT? <a name="Chapter1"></a>
 
@@ -171,3 +172,71 @@ libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.31.0" % 
 To run the integration tests with the command line, the prefix also changed from `test` to `it`: `it:test`
 
 # Chapter 6: The IO and Process libraries <a name="Chapter6">
+
+To create a single jar file for your application with all the dependencies, we can use the `Process` library. Your project can be compiled against the versions of scala defined in `crossScalaVersion := Seq("2.8.2", "2.9.0")` with the command `+package`, but before a folder to put the cross dependant classes from your jars needs to be created with:
+
+```scala
+val createJarDependentFolder = taskKey[File]("Create the dependent jar directories")
+createJarDependentFolder := {
+  Process(s"mkdir ${dependentFolder.value}") ! //The "!" at the end of the line executes the command, throwing the output away
+  dependentFolder.value
+}
+```
+
+Process can also be combined:
+
+* `<A> #&& <B>`: Executes process A, if it is successfull, then executes B and returns the exit code of B. 
+* `<A> #|| <B>`: Executes A, if it is successfull don't execute B, otherwise execute B and return its exit code.
+* `<A> #| <B>`: Execute A, pipe the output to process B and execute B.
+* `<A> #> file("file.log")`: Redirect the stdout of A to the file "file.log". For example `url("http://www.google.com") #> "grep google" #>> file("google.log") !`
+
+Instead of using processes to create and move files, it is better to use the sbt.IO tools, so the previous example can be rewritten as:
+
+```scala
+val createJarDependentFolder = taskKey[File]("Create the dependent jar directories")
+createJarDependentFolder := {
+  sbt.IO.createDirectory(dependentFolder.value)
+  dependentFolder.value
+}
+```
+
+A useful method to traverse all the files contained in a sbt directory is the `**` 
+
+```scala
+def create(dir:File, buildJar: File) = {
+val files = (dir ** "*").get.filter(d=> d! dir) // ** gives a recursive list matching the globbing pattern "*"
+val filesWithPath = files.map(x => (x,x.relativeTo(dir).get.getPath)) // gives the list of files retrieves before in relation with the dir folder
+sbt.IO.zip(filesWithPath, buildJar) // first parameter is the files to zip, the second is the path to the file within the zip
+}
+```
+
+Other interesting method of the sbt.IO package is `relativize(base:File, file:File):Option[String]` which returns true if `file` is below the `base` directory. To declare dependencies between your tasks, you can use the ouput of the task inside the dependant task like `dependantTask := { taskToDependOf.value ....}`, although you don't necessarily need to use the value returned by the task.
+It is important to notice that sbt uses scala macros to analyze code at compile time, some of the sbt features like `<task>.value` won't work if you call them directly in a method, instead pass the value of the task as a method parameter.
+It is useful to print the progress of a task, for which we can use the sbt logger, which can be referenced as `streams.value.log`, which is a reference to the streams task. use the `last` command to display the output written in log (which level is INFO by default). To change the log level use `set logLevel in Compile := Level.debug`.
+To use java in sbt, you can use the _Fork_ API like this:
+
+```scala
+// Forks the configured process, waits for it to complete, and returns the exit code 
+val exitCode:Int = Fork.java(options = Fork.options, mainClass +: arguments)
+// Forks the configured process, doesn't wait for it to complete, and returns the exit code
+// This returns a Process type that can be killed by calling the method `destroy`
+val exitCodeFork = Fork.java.fork(options = Fork.options, mainClass +: arguments) 
+```
+
+To do a setup and tear down of resources needed for a test, you can use:
+
+* `Tests.Setup`: testOption that is run before the tests
+* `Tests.Cleanup`: testOption that is run after the tests
+ 
+An example of using this in sbt is to define a trait with method start and stop (returns Unit), and a class that 
+implements it i.e. `class Example extends MyTrait`:
+
+```scala
+val example = new Example()
+testOptions in IntegrationTest += Tests.Setup{() => example.start()}
+testOptions in IntegrationTest += Tests.Cleanup{() => example.stop()}
+```
+
+This will execute `example.start` before the integration tests and `example.stop` after the integration tests.
+
+# Chapter 7: Accepting user input <a name="Chapter7">
