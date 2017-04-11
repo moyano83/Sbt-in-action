@@ -71,7 +71,7 @@ lazy val projectName = Project("projectName", file("locationRelativeToTheBaseDir
 
 Project dependencies are defined using the `dependsOn` method on `Project`. Use the `lazy val` initialization on the sbt file to avoid problems with circular references. To share a task across different projects, you can define it using `in ThisBuild` qualifier to the task key when you define the setting. By default, sbt will run all un-prefixed tasks/settings against all the projects defined in the build.
 
-# Chapter 4: The Default Build<a name="Chapter4></a>
+# Chapter 4: The Default Build<a name="Chapter4"></a>
 
 In sbt, you can inspect the dependencies a task has by using the `inspect tree <task/setting>`, this command displays an ascii tree with detailing which settings/tasks the task is dependent on and what values those setting/tasks returns.
 In Sbt there is two types of sources/resources for projects:
@@ -120,7 +120,7 @@ mappings in packageBin in Compile += (baseDirectory.value, "LICENSE") -> "LICENS
 
 It is possible to define the name of a project using the `name` setting which is of type `Setting[String]`, same for the `organization` and `version` settings. the `organization` and `version` settings are usually defined at build level
 
-# Chapter 5: Testing <a name="Chapter5">
+# Chapter 5: Testing <a name="Chapter5"></a>
 
 Sbt provides different task for testing:
 
@@ -171,7 +171,7 @@ libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.31.0" % 
 
 To run the integration tests with the command line, the prefix also changed from `test` to `it`: `it:test`
 
-# Chapter 6: The IO and Process libraries <a name="Chapter6">
+# Chapter 6: The IO and Process libraries <a name="Chapter6"></a>
 
 To create a single jar file for your application with all the dependencies, we can use the `Process` library. Your project can be compiled against the versions of scala defined in `crossScalaVersion := Seq("2.8.2", "2.9.0")` with the command `+package`, but before a folder to put the cross dependant classes from your jars needs to be created with:
 
