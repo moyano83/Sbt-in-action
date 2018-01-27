@@ -240,3 +240,5 @@ testOptions in IntegrationTest += Tests.Cleanup{() => example.stop()}
 This will execute `example.start` before the integration tests and `example.stop` after the integration tests.
 
 # Chapter 7: Accepting user input <a name="Chapter7">
+
+In Sbt an input task is any input that can accept additional user input before execution.
